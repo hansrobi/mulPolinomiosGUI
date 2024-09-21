@@ -1,0 +1,251 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>mulPolinomiosGUIClass</class>
+ <widget class="QMainWindow" name="mulPolinomiosGUIClass">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>731</width>
+    <height>470</height>
+   </rect>
+  </property>
+  <property name="minimumSize">
+   <size>
+    <width>731</width>
+    <height>470</height>
+   </size>
+  </property>
+  <property name="font">
+   <font>
+    <family>FiraCode Nerd Font</family>
+   </font>
+  </property>
+  <property name="windowTitle">
+   <string>mulPolinomiosGUI</string>
+  </property>
+  <widget class="QWidget" name="centralWidget">
+   <widget class="QComboBox" name="comboBox">
+    <property name="geometry">
+     <rect>
+      <x>530</x>
+      <y>10</y>
+      <width>191</width>
+      <height>24</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <family>FiraCode Nerd Font</family>
+     </font>
+    </property>
+    <item>
+     <property name="text">
+      <string>Vandermonde Reales</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>Vandermonde Imaginarios</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>Bit Reverso</string>
+     </property>
+    </item>
+   </widget>
+   <widget class="QPushButton" name="btnAgregarPolinomio">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>340</y>
+      <width>151</width>
+      <height>24</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <family>FiraCode Nerd Font</family>
+     </font>
+    </property>
+    <property name="text">
+     <string>Agregar Polinomio</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="btnAgregarCoeficiente">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>370</y>
+      <width>151</width>
+      <height>24</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <family>FiraCode Nerd Font</family>
+     </font>
+    </property>
+    <property name="text">
+     <string>Agregar Coeficiente</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="btnEliminarPolinomio">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>400</y>
+      <width>151</width>
+      <height>24</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <family>FiraCode Nerd Font</family>
+     </font>
+    </property>
+    <property name="text">
+     <string>Eliminar Polinomio</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="btnReset">
+    <property name="geometry">
+     <rect>
+      <x>599</x>
+      <y>370</y>
+      <width>121</width>
+      <height>24</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <family>FiraCode Nerd Font</family>
+     </font>
+    </property>
+    <property name="text">
+     <string>Limpiar</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="btnMultiplicar">
+    <property name="geometry">
+     <rect>
+      <x>600</x>
+      <y>340</y>
+      <width>121</width>
+      <height>24</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <family>FiraCode Nerd Font</family>
+     </font>
+    </property>
+    <property name="text">
+     <string>Multiplicar</string>
+    </property>
+   </widget>
+   <widget class="QTableWidget" name="tableWidgetResult">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>290</y>
+      <width>711</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <family>FiraCode Nerd Font</family>
+     </font>
+    </property>
+    <attribute name="horizontalHeaderVisible">
+     <bool>false</bool>
+    </attribute>
+    <attribute name="verticalHeaderVisible">
+     <bool>false</bool>
+    </attribute>
+   </widget>
+   <widget class="QLabel" name="lblResultado">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>260</y>
+      <width>601</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <family>FiraCode Nerd Font</family>
+     </font>
+    </property>
+    <property name="text">
+     <string>Sin Resultados</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="btnGraficarTiempo">
+    <property name="geometry">
+     <rect>
+      <x>440</x>
+      <y>340</y>
+      <width>151</width>
+      <height>24</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <family>FiraCode Nerd Font</family>
+     </font>
+    </property>
+    <property name="text">
+     <string>Graficar Tiempo</string>
+    </property>
+   </widget>
+   <widget class="QTableWidget" name="tableWidget">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>50</y>
+      <width>711</width>
+      <height>191</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <family>FiraCode Nerd Font</family>
+     </font>
+    </property>
+   </widget>
+   <widget class="QLabel" name="lblEstado">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>10</y>
+      <width>35</width>
+      <height>35</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+   </widget>
+  </widget>
+  <widget class="QMenuBar" name="menuBar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>731</width>
+     <height>21</height>
+    </rect>
+   </property>
+  </widget>
+  <widget class="QStatusBar" name="statusBar"/>
+ </widget>
+ <layoutdefault spacing="6" margin="11"/>
+ <resources>
+  <include location="mulPolinomiosGUI.qrc"/>
+ </resources>
+ <connections/>
+</ui>
