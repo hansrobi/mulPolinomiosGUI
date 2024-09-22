@@ -18,11 +18,15 @@ private:
     void agregarPolinomio();
     void eliminarPolinomio();
     void agregarCoeficiente();
+    void ajustarTabla();
+    void generarPolinomiosAleatorios();
     void rellenarCeldasVaciasConCeros();
+    bool validarDatosEntrada();
     void multiplicarPolinomios();
     void limpiarTabla(QTableWidget* tabla);
-    void displayResultInTable(const std::vector<long double>& result);
+    void mostrarResultado(const std::vector<long double>& result);
     void reset();
-    //void graficarTiempo();
-    QVector<qint64> tiempos;  // Almacena los tiempos de ejecución
+    void graficarTiempo();
+    std::map<QString, qint64> tiempos;
+    std::vector<std::vector<long double>> polinomiosAnteriores;
 };

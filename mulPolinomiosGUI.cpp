@@ -3,6 +3,8 @@
 #include <iostream>
 #include <complex>
 #include <cmath>
+#include <cstdlib>
+#include <ctime>
 #include <QMessageBox>
 #include <QLabel>
 #include <QTimer>
@@ -11,9 +13,12 @@
 #include <QtCharts/QChart>
 #include <QtCharts/QChartView>
 #include <QtCharts/QLineSeries>
+#include <QtCharts/QValueAxis>
+#include <QtCharts/QCategoryAxis>
 #include <QVBoxLayout>
-
-using namespace std;
+#include <QtCharts/QBarSeries>
+#include <QtCharts/QBarSet>
+#include <QtCharts/QBarCategoryAxis>
 
 const long double PI = 3.14159265358979323846L;
 
@@ -22,17 +27,17 @@ mulPolinomiosGUI::mulPolinomiosGUI(QWidget* parent)
 {
     ui.setupUi(this);
 
-    //QLineSeries* series = new QLineSeries();
-    //QChart* chart = new QChart();
-    //QChartView* chartView = new QChartView(chart);
+    // Establecer un tamaño fijo para la ventana
+    setFixedSize(731, 470);
 
     // Conectar los botones a las acciones
     connect(ui.btnAgregarPolinomio, &QPushButton::clicked, this, &mulPolinomiosGUI::agregarPolinomio);
     connect(ui.btnEliminarPolinomio, &QPushButton::clicked, this, &mulPolinomiosGUI::eliminarPolinomio);
     connect(ui.btnAgregarCoeficiente, &QPushButton::clicked, this, &mulPolinomiosGUI::agregarCoeficiente);
+    connect(ui.btnGenerarPolinomios, &QPushButton::clicked, this, &mulPolinomiosGUI::generarPolinomiosAleatorios);
     connect(ui.btnMultiplicar, &QPushButton::clicked, this, &mulPolinomiosGUI::multiplicarPolinomios);
     connect(ui.btnReset, &QPushButton::clicked, this, &mulPolinomiosGUI::reset);
-    //connect(ui.btnGraficarTiempo, &QPushButton::clicked, this, &fft_dft_gui::graficarTiempo);
+    connect(ui.btnGraficarTiempo, &QPushButton::clicked, this, &mulPolinomiosGUI::graficarTiempo);
 }
 
 mulPolinomiosGUI::~mulPolinomiosGUI()
@@ -40,32 +45,31 @@ mulPolinomiosGUI::~mulPolinomiosGUI()
 
 void mulPolinomiosGUI::agregarPolinomio() {
     // Añadir una nueva fila (polinomio) a la tabla
-    int currentRowCount = ui.tableWidget->rowCount();
-    ui.tableWidget->setRowCount(currentRowCount + 1);
+    int contFilasActual = ui.tablaPolinomios->rowCount();
+    ui.tablaPolinomios->setRowCount(contFilasActual + 1);
 
     // Actualizar el encabezado vertical con "Polinomio X"
-    for (int i = 0; i < ui.tableWidget->rowCount(); ++i) {
-        QString headerLabel = "Polinomio " + QString::number(i + 1);
-        QTableWidgetItem* headerItem = new QTableWidgetItem(headerLabel);
-        headerItem->setTextAlignment(Qt::AlignCenter);
-        ui.tableWidget->setVerticalHeaderItem(i, headerItem);
+    for (int i = 0; i < ui.tablaPolinomios->rowCount(); ++i) {
+        QString etiquetaEncabezado = "Polinomio " + QString::number(i + 1);
+        QTableWidgetItem* itemEncabezado = new QTableWidgetItem(etiquetaEncabezado);
+        itemEncabezado->setTextAlignment(Qt::AlignCenter);
+        ui.tablaPolinomios->setVerticalHeaderItem(i, itemEncabezado);
     }
 
     // Alinear el contenido de las celdas en la nueva fila al centro
-    for (int j = 0; j < ui.tableWidget->columnCount(); ++j) {
-        QTableWidgetItem* newItem = new QTableWidgetItem("");  // Puedes inicializar con algún valor si es necesario
-        newItem->setTextAlignment(Qt::AlignCenter);  // Alinear el texto al centro
-        ui.tableWidget->setItem(currentRowCount, j, newItem);
+    for (int j = 0; j < ui.tablaPolinomios->columnCount(); ++j) {
+        QTableWidgetItem* nuevoItem = new QTableWidgetItem("");  // Puedes inicializar con algún valor si es necesario
+        nuevoItem->setTextAlignment(Qt::AlignCenter);  // Alinear el texto al centro
+        ui.tablaPolinomios->setItem(contFilasActual, j, nuevoItem);
     }
 
-    ui.tableWidget->resizeRowsToContents();
-    ui.tableWidget->resizeColumnsToContents();
+    ajustarTabla();
 }
 
 void mulPolinomiosGUI::eliminarPolinomio() {
     // Obtener la fila seleccionada
-    QList<QTableWidgetSelectionRange> selectedRanges = ui.tableWidget->selectedRanges();
-    if (selectedRanges.isEmpty()) {
+    QList<QTableWidgetSelectionRange> rangoSeleccionado = ui.tablaPolinomios->selectedRanges();
+    if (rangoSeleccionado.isEmpty()) {
         // Crear el mensaje de advertencia
         QMessageBox msgBox;
         msgBox.setWindowTitle("Eliminar Polinomio");
@@ -79,116 +83,153 @@ void mulPolinomiosGUI::eliminarPolinomio() {
     }
 
     // Suponiendo que solo se puede seleccionar una fila a la vez
-    int selectedRow = selectedRanges.first().topRow();
+    int filaSeleccionada = rangoSeleccionado.first().topRow();
 
     // Eliminar la fila seleccionada
-    ui.tableWidget->removeRow(selectedRow);
+    ui.tablaPolinomios->removeRow(filaSeleccionada);
 
     // Actualizar los encabezados verticales para reflejar los polinomios restantes
-    for (int i = 0; i < ui.tableWidget->rowCount(); ++i) {
-        QString headerLabel = "Polinomio " + QString::number(i + 1);
-        QTableWidgetItem* headerItem = new QTableWidgetItem(headerLabel);
-        headerItem->setTextAlignment(Qt::AlignCenter);
-        ui.tableWidget->setVerticalHeaderItem(i, headerItem);
+    for (int i = 0; i < ui.tablaPolinomios->rowCount(); ++i) {
+        QString etiquetaEncabezado = "Polinomio " + QString::number(i + 1);
+        QTableWidgetItem* itemEncabezado = new QTableWidgetItem(etiquetaEncabezado);
+        itemEncabezado->setTextAlignment(Qt::AlignCenter);
+        ui.tablaPolinomios->setVerticalHeaderItem(i, itemEncabezado);
     }
 
-    ui.tableWidget->resizeRowsToContents();
+    ajustarTabla();
 }
 
 void mulPolinomiosGUI::agregarCoeficiente() {
     // Añadir una nueva columna (coeficiente) a la tabla
-    int currentColumnCount = ui.tableWidget->columnCount();
-    ui.tableWidget->setColumnCount(currentColumnCount + 1);
+    int contColumnasActual = ui.tablaPolinomios->columnCount();
+    ui.tablaPolinomios->setColumnCount(contColumnasActual + 1);
 
     // Crear el encabezado con x y su potencia como superíndice
-    QString headerLabel;
-    if (currentColumnCount == 0) {
-        headerLabel = "x^0";  // El primer encabezado será "ind"
+    QString etiquetaEncabezado;
+    if (contColumnasActual == 0) {
+        etiquetaEncabezado = "x^0";  // El primer encabezado será "x^0"
     }
-    else if (currentColumnCount == 1) {
-        headerLabel = "x";    // El segundo encabezado será "x"
+    else if (contColumnasActual == 1) {
+        etiquetaEncabezado = "x";    // El segundo encabezado será "x"
     }
     else {
-        headerLabel = "x^" + QString::number(currentColumnCount);  // Los siguientes encabezados serán x^n
+        etiquetaEncabezado = "x^" + QString::number(contColumnasActual);  // Los siguientes encabezados serán x^n
     }
 
-    // Usar HTML para el encabezado
-    QTableWidgetItem* headerItem = new QTableWidgetItem(headerLabel);
-    headerItem->setTextAlignment(Qt::AlignCenter);
-    ui.tableWidget->setHorizontalHeaderItem(currentColumnCount, headerItem);
+    QTableWidgetItem* itemEncabezado = new QTableWidgetItem(etiquetaEncabezado);
+    itemEncabezado->setTextAlignment(Qt::AlignCenter);
+    ui.tablaPolinomios->setHorizontalHeaderItem(contColumnasActual, itemEncabezado);
 
     // Alinear el contenido de las celdas en la nueva columna al centro
-    for (int i = 0; i < ui.tableWidget->rowCount(); ++i) {
-        QTableWidgetItem* item = ui.tableWidget->item(i, currentColumnCount);
+    for (int i = 0; i < ui.tablaPolinomios->rowCount(); ++i) {
+        QTableWidgetItem* item = ui.tablaPolinomios->item(i, contColumnasActual);
         if (!item) {
             item = new QTableWidgetItem("");  // Inicializar si la celda está vacía
-            ui.tableWidget->setItem(i, currentColumnCount, item);
+            ui.tablaPolinomios->setItem(i, contColumnasActual, item);
         }
         item->setTextAlignment(Qt::AlignCenter);  // Alinear el texto al centro
     }
 
-    ui.tableWidget->resizeRowsToContents();
-    ui.tableWidget->resizeColumnsToContents();
+    ajustarTabla();
 }
 
-// Function to sum polynomials
-std::vector<long double> sumPolynomials(const std::vector<long double>& poly1, const std::vector<long double>& poly2) {
-    std::vector<long double> result(std::max(poly1.size(), poly2.size()), 0);
-    for (size_t i = 0; i < poly1.size(); ++i) {
-        result[i] += poly1[i];
+void mulPolinomiosGUI::generarPolinomiosAleatorios() {
+    // Inicializar el generador de números aleatorios
+    std::srand(static_cast<unsigned>(std::time(nullptr)));
+
+    int numPolinomios = std::rand() % 8 + 3; // Generar un número aleatorio de polinomios entre 3 y 8
+    int numTerminos = std::rand() % 20 + 10; // Generar un número aleatorio de términos entre 10 y 20
+
+    // Limpiar la tabla antes de generar los nuevos polinomios aleatorios
+    reset();
+
+    // Añadir columnas (términos) al TableWidget si es necesario
+    for (int col = 0; col < numTerminos; ++col) {
+        agregarCoeficiente();
     }
-    for (size_t i = 0; i < poly2.size(); ++i) {
-        result[i] += poly2[i];
+
+    // Añadir filas (polinomios) y rellenar con coeficientes aleatorios
+    for (int fila = 0; fila < numPolinomios; ++fila) {
+        agregarPolinomio(); // Agregar una fila
+
+        for (int col = 0; col < numTerminos; ++col) {
+            int coeficienteAleatorio = std::rand() % 30 + 5; // Generar un coeficiente aleatorio entre 5 y 30
+
+            // Crear un QTableWidgetItem con el valor del coeficiente aleatorio
+            QTableWidgetItem* nuevoItem = new QTableWidgetItem(QString::number(coeficienteAleatorio));
+            nuevoItem->setTextAlignment(Qt::AlignCenter);
+
+            // Insertar el coeficiente en la tabla
+            ui.tablaPolinomios->setItem(fila, col, nuevoItem);
+        }
     }
-    return result;
+
+    ajustarTabla();
+}
+
+void mulPolinomiosGUI::ajustarTabla() {
+    ui.tablaPolinomios->resizeRowsToContents();
+    ui.tablaPolinomios->resizeColumnsToContents();
+}
+
+// Funcion para sumar polinomios
+std::vector<long double> sumaPolinomios(const std::vector<long double>& pol1, const std::vector<long double>& pol2) {
+    std::vector<long double> resultado(std::max(pol1.size(), pol2.size()), 0);
+    for (size_t i = 0; i < pol1.size(); ++i) {
+        resultado[i] += pol1[i];
+    }
+    for (size_t i = 0; i < pol2.size(); ++i) {
+        resultado[i] += pol2[i];
+    }
+    return resultado;
 }
 
 // Función auxiliar para la multiplicación de polinomios
-std::vector<long double> multiplyPolynomials(const std::vector<long double>& a, const std::vector<long double>& b) {
-    std::vector<long double> result(a.size() + b.size() - 1, 0);
-    for (size_t i = 0; i < a.size(); ++i) {
-        for (size_t j = 0; j < b.size(); ++j) {
-            result[i + j] += a[i] * b[j];
+std::vector<long double> multiplicacionPolinomios(const std::vector<long double>& pol1, const std::vector<long double>& pol2) {
+    std::vector<long double> resultado(pol1.size() + pol2.size() - 1, 0);
+    for (size_t i = 0; i < pol1.size(); ++i) {
+        for (size_t j = 0; j < pol2.size(); ++j) {
+            resultado[i + j] += pol1[i] * pol2[j];
         }
     }
-    return result;
+    return resultado;
 }
 
-// Lagrange interpolation
-std::vector<long double> Lagrange(const std::vector<long double>& coefficientsA, const std::vector<long double>& coefficientsB) {
-    size_t n = coefficientsA.size() + coefficientsB.size() - 1;
-    std::vector<long double> Tanteo(n, 0);
-    std::vector<long double> BasePolynomial(n, 0);
+// Interpolación de Lagrange
+std::vector<long double> lagrange(const std::vector<long double>& coeficientesA, const std::vector<long double>& coeficientesB) {
+    size_t n = coeficientesA.size() + coeficientesB.size() - 1;
+    std::vector<long double> tanteo(n, 0);
+    std::vector<long double> basePolinomial(n, 0);
 
-    auto tanteoPolynomial = [](const std::vector<long double>& coefficients, int i) {
-        long double result = 1;
-        for (long double coef : coefficients) {
-            result *= coef * i;
+    auto tanteoPolinomial = [](const std::vector<long double>& coeficientes, int i) {
+        long double resultado = 1;
+        for (long double coef : coeficientes) {
+            resultado *= coef * i;
         }
-        return result;
+        return resultado;
         };
 
     for (size_t i = 0; i < n; ++i) {
-        Tanteo[i] = tanteoPolynomial(coefficientsA, i + 1) * tanteoPolynomial(coefficientsB, i + 1);
+        tanteo[i] = tanteoPolinomial(coeficientesA, i + 1) * tanteoPolinomial(coeficientesB, i + 1);
     }
 
     for (size_t k = 1; k <= n; ++k) {
-        std::vector<long double> BaseMult = { 1 };
-        long double baseNum = Tanteo[k - 1];
+        std::vector<long double> baseMult = { 1 };
+        long double baseNum = tanteo[k - 1];
         for (size_t j = 1; j <= n; ++j) {
             if (k != j) {
                 std::vector<long double> basic = { 1, -static_cast<long double>(j) };
-                BaseMult = multiplyPolynomials(BaseMult, basic);
+                baseMult = multiplicacionPolinomios(baseMult, basic);
                 baseNum /= (k - j);
             }
         }
-        for (long double& coef : BaseMult) {
+        for (long double& coef : baseMult) {
             coef *= baseNum;
         }
-        BasePolynomial = sumPolynomials(BaseMult, BasePolynomial);
+        basePolinomial = sumaPolinomios(baseMult, basePolinomial);
     }
 
-    return BasePolynomial;
+    return basePolinomial;
 }
 
 // Fast Fourier Transform (FFT)
@@ -216,16 +257,16 @@ void fft(std::vector<std::complex<long double>>& X, bool inv = false) {
     }
 }
 
-// Vandermonde method with real numbers using FFT
-std::vector<long double> VandermondeReales(const std::vector<long double>& coefficientsA, const std::vector<long double>& coefficientsB) {
+// FFT con Matriz de Vandermonde en Reales
+std::vector<long double> vandermondeReales(const std::vector<long double>& coeficientesA, const std::vector<long double>& coeficientesB) {
     int n = 1;
-    while (n < coefficientsA.size() + coefficientsB.size() - 1) {
+    while (n < coeficientesA.size() + coeficientesB.size() - 1) {
         n <<= 1;
     }
 
     std::vector<std::complex<long double>> A(n), B(n);
-    for (size_t i = 0; i < coefficientsA.size(); ++i) A[i] = std::complex<long double>(coefficientsA[i], 0.0);
-    for (size_t i = 0; i < coefficientsB.size(); ++i) B[i] = std::complex<long double>(coefficientsB[i], 0.0);
+    for (size_t i = 0; i < coeficientesA.size(); ++i) A[i] = std::complex<long double>(coeficientesA[i], 0.0);
+    for (size_t i = 0; i < coeficientesB.size(); ++i) B[i] = std::complex<long double>(coeficientesB[i], 0.0);
 
     fft(A);
     fft(B);
@@ -236,28 +277,28 @@ std::vector<long double> VandermondeReales(const std::vector<long double>& coeff
 
     fft(A, true);
 
-    std::vector<long double> result(n);
+    std::vector<long double> resultado(n);
     for (int i = 0; i < n; ++i) {
-        result[i] = std::round(A[i].real());
+        resultado[i] = std::round(A[i].real());
     }
 
-    while (!result.empty() && std::abs(result.back()) < 1e-10) {
-        result.pop_back();
+    while (!resultado.empty() && std::abs(resultado.back()) < 1e-10) {
+        resultado.pop_back();
     }
 
-    return result;
+    return resultado;
 }
 
-// Vandermonde method with imaginary numbers
-std::vector<long double> VandermondeImaginarios(const std::vector<long double>& coefficientsA, const std::vector<long double>& coefficientsB) {
+// FFT con Matriz de Vandermonde en Imaginarios
+std::vector<long double> vandermondeImaginarios(const std::vector<long double>& coeficientesA, const std::vector<long double>& coeficientesB) {
     int n = 1;
-    while (n < coefficientsA.size() + coefficientsB.size() - 1) {
+    while (n < coeficientesA.size() + coeficientesB.size() - 1) {
         n <<= 1;
     }
 
     std::vector<std::complex<long double>> A(n), B(n);
-    for (size_t i = 0; i < coefficientsA.size(); ++i) A[i] = std::complex<long double>(coefficientsA[i], 0);
-    for (size_t i = 0; i < coefficientsB.size(); ++i) B[i] = std::complex<long double>(coefficientsB[i], 0);
+    for (size_t i = 0; i < coeficientesA.size(); ++i) A[i] = std::complex<long double>(coeficientesA[i], 0);
+    for (size_t i = 0; i < coeficientesB.size(); ++i) B[i] = std::complex<long double>(coeficientesB[i], 0);
 
     fft(A);
     fft(B);
@@ -268,28 +309,28 @@ std::vector<long double> VandermondeImaginarios(const std::vector<long double>& 
 
     fft(A, true);
 
-    std::vector<long double> result(n);
+    std::vector<long double> resultado(n);
     for (int i = 0; i < n; ++i) {
-        result[i] = std::round(A[i].real());
+        resultado[i] = std::round(A[i].real());
     }
 
-    while (!result.empty() && std::abs(result.back()) < 1e-10) {
-        result.pop_back();
+    while (!resultado.empty() && std::abs(resultado.back()) < 1e-10) {
+        resultado.pop_back();
     }
 
-    return result;
+    return resultado;
 }
 
-// Bit reversal method
-std::vector<long double> BitReverso(const std::vector<long double>& coefficientsA, const std::vector<long double>& coefficientsB) {
+// FFT usando Bit Reverso
+std::vector<long double> BitReverso(const std::vector<long double>& coeficientesA, const std::vector<long double>& coeficientesB) {
     int n = 1;
-    while (n < coefficientsA.size() + coefficientsB.size() - 1) {
+    while (n < coeficientesA.size() + coeficientesB.size() - 1) {
         n <<= 1;
     }
 
     std::vector<std::complex<long double>> A(n), B(n);
-    for (size_t i = 0; i < coefficientsA.size(); ++i) A[i] = std::complex<long double>(coefficientsA[i], 0);
-    for (size_t i = 0; i < coefficientsB.size(); ++i) B[i] = std::complex<long double>(coefficientsB[i], 0);
+    for (size_t i = 0; i < coeficientesA.size(); ++i) A[i] = std::complex<long double>(coeficientesA[i], 0);
+    for (size_t i = 0; i < coeficientesB.size(); ++i) B[i] = std::complex<long double>(coeficientesB[i], 0);
 
     fft(A);
     fft(B);
@@ -300,31 +341,31 @@ std::vector<long double> BitReverso(const std::vector<long double>& coefficients
 
     fft(A, true);
 
-    std::vector<long double> result(n);
+    std::vector<long double> resultado(n);
     for (int i = 0; i < n; ++i) {
-        result[i] = std::round(A[i].real());
+        resultado[i] = std::round(A[i].real());
     }
 
-    while (!result.empty() && std::abs(result.back()) < 1e-10) {
-        result.pop_back();
+    while (!resultado.empty() && std::abs(resultado.back()) < 1e-10) {
+        resultado.pop_back();
     }
 
-    return result;
+    return resultado;
 }
 
 void mulPolinomiosGUI::rellenarCeldasVaciasConCeros() {
-    int rowCount = ui.tableWidget->rowCount();
-    int columnCount = ui.tableWidget->columnCount();
+    int contFilas = ui.tablaPolinomios->rowCount();
+    int contColumnas = ui.tablaPolinomios->columnCount();
 
     // Recorrer todas las celdas de la tabla
-    for (int i = 0; i < rowCount; ++i) {
-        for (int j = 0; j < columnCount; ++j) {
-            QTableWidgetItem* item = ui.tableWidget->item(i, j);
+    for (int i = 0; i < contFilas; ++i) {
+        for (int j = 0; j < contColumnas; ++j) {
+            QTableWidgetItem* item = ui.tablaPolinomios->item(i, j);
             if (!item || item->text().isEmpty()) {
                 // Si la celda está vacía, insertar "0"
                 if (!item) {
                     item = new QTableWidgetItem("0");
-                    ui.tableWidget->setItem(i, j, item);
+                    ui.tablaPolinomios->setItem(i, j, item);
                 }
                 else {
                     item->setText("0");
@@ -334,14 +375,14 @@ void mulPolinomiosGUI::rellenarCeldasVaciasConCeros() {
         }
     }
 
-    ui.tableWidget->resizeRowsToContents();
-    ui.tableWidget->resizeColumnsToContents();
+    ui.tablaPolinomios->resizeRowsToContents();
+    ui.tablaPolinomios->resizeColumnsToContents();
 }
 
 void mulPolinomiosGUI::reset() {
     // Limpiar el contenido de la tabla de coeficientes y resultados
-    limpiarTabla(ui.tableWidget);
-    limpiarTabla(ui.tableWidgetResult);
+    limpiarTabla(ui.tablaPolinomios);
+    limpiarTabla(ui.tablaResultados);
 
     // Reiniciar el estado de las etiquetas
     ui.lblResultado->setText("Sin resultados");
@@ -354,90 +395,113 @@ void mulPolinomiosGUI::reset() {
 
     // Reiniciar el comboBox de métodos de multiplicación a su valor por defecto
     ui.comboBox->setCurrentIndex(0);
+}
 
-    // Mostrar un mensaje de que la interfaz ha sido reseteada
-    QMessageBox::information(this, "Reinicio", "La interfaz ha sido reiniciada.");
+bool mulPolinomiosGUI::validarDatosEntrada() {
+    int contPolinomios = ui.tablaPolinomios->rowCount();
+    int contTerminos = ui.tablaPolinomios->columnCount();
+
+    // Validar que haya polinomios
+    if (contPolinomios == 0 || contTerminos == 0) {
+        QMessageBox::warning(this, "Error", "No hay polinomios o terminos disponibles para multiplicar.");
+        return false;
+    }
+
+    // Recorrer todas las celdas de la tabla
+    for (int i = 0; i < contPolinomios; ++i) {
+        for (int j = 0; j < contTerminos; ++j) {
+            QTableWidgetItem* item = ui.tablaPolinomios->item(i, j);
+
+            // Intentar convertir el texto de la celda a un número
+            bool conversionExitosa;
+            item->text().toDouble(&conversionExitosa);
+            if (!conversionExitosa) {
+                QMessageBox::warning(this, "Entrada invalida", "Se han detectado valores no numericos. Por favor, ingresa solo números.");
+                return false;
+            }
+        }
+    }
+
+    // Si todas las validaciones pasan
+    return true;
 }
 
 // Función que se ejecuta al presionar el botón de multiplicar
 void mulPolinomiosGUI::multiplicarPolinomios()
 {
     rellenarCeldasVaciasConCeros();
-    limpiarTabla(ui.tableWidgetResult);
+
+    // Validar los datos antes de proceder
+    if (!validarDatosEntrada()) {
+        return;
+    }
+
+    limpiarTabla(ui.tablaResultados);
 
     // Mostrar el ícono de carga
     ui.lblResultado->setText("");
-    QMovie* loadingMovie = new QMovie("./images/carga.gif");
+    QMovie* gifCarga = new QMovie("./images/carga.gif");
     ui.lblEstado->setScaledContents(true);
-    ui.lblEstado->setMovie(loadingMovie);
+    ui.lblEstado->setMovie(gifCarga);
     ui.lblEstado->show();
-    loadingMovie->start();  // Iniciar la animación de carga
+    gifCarga->start();  // Iniciar la animación de carga
+
+    // Leer los coeficientes actuales desde el QTableWidget
+    int numPolinomios = ui.tablaPolinomios->rowCount();
+    int numTerminos = ui.tablaPolinomios->columnCount();
+
+    std::vector<std::vector<long double>> polinomiosActuales(numPolinomios, std::vector<long double>(numTerminos));
+
+    for (int i = 0; i < numPolinomios; ++i) {
+        for (int j = 0; j < numTerminos; ++j) {
+            QTableWidgetItem* item = ui.tablaPolinomios->item(i, j);
+            polinomiosActuales[i][j] = item && !item->text().isEmpty() ? item->text().toLongLong() : 0;
+        }
+    }
+
+    // Comparar los polinomios actuales con los anteriores
+    if (polinomiosActuales != polinomiosAnteriores) {
+        // Si los polinomios son diferentes, reiniciar los tiempos
+        tiempos.clear();
+        QMessageBox::information(this, "Reinicio de tiempos", "Se detecto un cambio en los polinomios. Los tiempos de ejecucion han sido reiniciados.");
+    }
+
+    polinomiosAnteriores = polinomiosActuales;
 
     // Retrasar la ejecución de la multiplicación con un QTimer
-    QTimer::singleShot(500, this, [this, loadingMovie]() {
-        // Realizar la multiplicación
-        int numRows = ui.tableWidget->rowCount();    // Número de polinomios
-        int numCols = ui.tableWidget->columnCount(); // Número de términos en cada polinomio
-
-        // Leer los coeficientes desde el QTableWidget
-        std::vector<std::vector<long double>> polinomios(numRows, std::vector<long double>(numCols));
-
-        for (int i = 0; i < numRows; ++i) {
-            for (int j = 0; j < numCols; ++j) {
-                QTableWidgetItem* item = ui.tableWidget->item(i, j);
-                if (item && !item->text().isEmpty()) {
-                    polinomios[i][j] = item->text().toLongLong();
-                }
-                else {
-                    polinomios[i][j] = 0; // Si la celda está vacía, se toma como 0
-                }
-            }
-        }
+    QTimer::singleShot(500, this, [this, gifCarga, polinomiosActuales]() {
+        int numPolinomios = polinomiosActuales.size();
 
         // Determinar el método de multiplicación seleccionado
-        QString selectedMethod = ui.comboBox->currentText();
-        std::vector<long double> result;
+        QString metodoElegido = ui.comboBox->currentText();
+        std::vector<long double> resultado = polinomiosActuales[0];
         QElapsedTimer temporizador;
 
-        // Multiplicar los polinomios de acuerdo al método seleccionado
-        if (selectedMethod == "Vandermonde Reales") {
-            temporizador.start();
-            result = polinomios[0];
-            for (int i = 1; i < numRows; ++i) {
-                result = VandermondeReales(result, polinomios[i]);
+        // Seleccionar el método de multiplicación
+        temporizador.start();
+        for (int i = 1; i < numPolinomios; ++i) {
+            if (metodoElegido == "Vandermonde Reales") {
+                resultado = vandermondeReales(resultado, polinomiosActuales[i]);
             }
-        }
-        else if (selectedMethod == "Vandermonde Imaginarios") {
-            temporizador.start();
-            result = polinomios[0];
-            for (int i = 1; i < numRows; ++i) {
-                result = VandermondeImaginarios(result, polinomios[i]);
+            else if (metodoElegido == "Vandermonde Imaginarios") {
+                resultado = vandermondeImaginarios(resultado, polinomiosActuales[i]);
             }
-        }
-        else if (selectedMethod == "Bit Reverso") {
-            temporizador.start();
-            result = polinomios[0];
-            for (int i = 1; i < numRows; ++i) {
-                result = BitReverso(result, polinomios[i]);
+            else if (metodoElegido == "Bit Reverso") {
+                resultado = BitReverso(resultado, polinomiosActuales[i]);
             }
-        }
-        else {
-            QMessageBox::warning(this, "Error", "Método de multiplicación no reconocido.");
-            loadingMovie->stop();
-            return;
         }
 
         qint64 tiempoTranscurrido = temporizador.elapsed();
-        // Almacenar el tiempo en un vector
-        tiempos.push_back(tiempoTranscurrido);
+        // Almacenar el tiempo en el map
+        tiempos[metodoElegido] = tiempoTranscurrido;
 
         // Mostrar el resultado en el QTextEdit
-        displayResultInTable(result);
+        mostrarResultado(resultado);
 
         // Detener el icono de carga y mostrar el mensaje de éxito
-        loadingMovie->stop();
+        gifCarga->stop();
         ui.lblEstado->hide();
-        ui.lblResultado->setText("Multiplicacion con " + selectedMethod + " exitosa");
+        ui.lblResultado->setText("Multiplicacion con " + metodoElegido + " exitosa");
         });
 }
 
@@ -447,83 +511,105 @@ void mulPolinomiosGUI::limpiarTabla(QTableWidget* tabla) {
     tabla->setColumnCount(0);
 }
 
-void mulPolinomiosGUI::displayResultInTable(const std::vector<long double>& result) {
+void mulPolinomiosGUI::mostrarResultado(const std::vector<long double>& resultado) {
     // Configurar el QTableWidget para mostrar el polinomio resultante
-    int resultSize = result.size();
-    ui.tableWidgetResult->setRowCount(1);  // Solo una fila para el polinomio resultante
-    ui.tableWidgetResult->setColumnCount(resultSize);  // Cada término es una columna
+    int tamResultado = resultado.size();
+    ui.tablaResultados->setRowCount(1);  // Solo una fila para el polinomio resultante
+    ui.tablaResultados->setColumnCount(tamResultado);  // Cada término es una columna
 
     // Colocar cada coeficiente con su respectiva variable x y el exponente como superíndice
-    for (int i = 0; i < resultSize; ++i) {
-        QString term;
+    for (int i = 0; i < tamResultado; ++i) {
+        QString termino;
 
         // Mostrar el coeficiente si es diferente de cero
-        if (std::abs(result[i]) > 1e-10) {
-            term += QString::number(static_cast<double>(std::abs(result[i])));  // Coeficiente
+        if (std::abs(resultado[i]) > 1e-10) {
+            termino += QString::number(static_cast<double>(std::abs(resultado[i])));  // Coeficiente
 
             if (i > 0) {
-                term += "x";  // Variable x
+                termino += "x";  // Variable x
                 if (i > 1) {
                     // Usar <sup> para el exponente
-                    term += "<sup>" + QString::number(i) + "</sup>";
+                    termino += "<sup>" + QString::number(i) + "</sup>";
                 }
             }
 
             // Crear un QLabel para mostrar el término con HTML
-            QLabel* label = new QLabel(term);
-            label->setAlignment(Qt::AlignCenter);  // Centrar el texto
-            label->setTextFormat(Qt::RichText);    // Permitir que QLabel interprete HTML
-            ui.tableWidgetResult->setCellWidget(0, resultSize - i - 1, label);  // Añadir el QLabel como widget de celda
+            QLabel* label = new QLabel(termino);
+            label->setAlignment(Qt::AlignCenter);
+            label->setTextFormat(Qt::RichText);
+            ui.tablaResultados->setCellWidget(0, tamResultado - i - 1, label);  // Añadir el QLabel como widget de celda
         }
         else {
             // Insertar una celda vacía si el coeficiente es cero
             QLabel* label = new QLabel("");
             label->setAlignment(Qt::AlignCenter);
-            ui.tableWidgetResult->setCellWidget(0, resultSize - i - 1, label);
+            ui.tablaResultados->setCellWidget(0, tamResultado - i - 1, label);
         }
     }
 
     // Ajustar el tamaño de las celdas para mejor visualización
-    ui.tableWidgetResult->resizeColumnsToContents();
+    ui.tablaResultados->resizeColumnsToContents();
 }
 
-//void fft_dft_gui::graficarTiempo() {
-//    // Asegúrate de tener los tiempos listos
-//    if (tiempos.empty()) {
-//        QMessageBox::warning(this, "Error", "No hay datos de tiempo para graficar.");
-//        return;
-//    }
-//
-//    // Crear un nuevo gráfico
-//    QChart* chart = new QChart();
-//    chart->setTitle("Tiempo de Ejecución de Métodos");
-//
-//    // Crear la serie
-//    QLineSeries* series = new QLineSeries();
-//    for (int i = 0; i < tiempos.size(); ++i) {
-//        series->append(i, tiempos[i]); // Usar índices como x y tiempos como y
-//    }
-//
-//    // Añadir la serie al gráfico
-//    chart->addSeries(series);
-//    chart->createDefaultAxes();
-//    chart->axes(Qt::Vertical).first()->setTitleText("Tiempo (ms)");
-//    chart->axes(Qt::Horizontal).first()->setTitleText("Métodos");
-//
-//    // Crear un gráfico de vista
-//    QChartView* chartView = new QChartView(chart);
-//    chartView->setRenderHint(QPainter::Antialiasing);
-//
-//    // Mostrar el gráfico en una ventana nueva
-//    chartView->resize(640, 480);
-//    chartView->show();
-//
-//    //// Mostrar la ventana de gráfico
-//    //QWidget* ventanaGrafica = new QWidget();
-//    //QVBoxLayout* layout = new QVBoxLayout(ventanaGrafica);
-//    //layout->addWidget(chartView);
-//    //ventanaGrafica->setLayout(layout);
-//    //ventanaGrafica->setWindowTitle("Gráfica de Tiempo de Ejecución");
-//    //ventanaGrafica->resize(800, 600);
-//    //ventanaGrafica->show();
-//}
+void mulPolinomiosGUI::graficarTiempo() {
+    // Asegúrate de tener los tiempos listos
+    if (tiempos.empty()) {
+        QMessageBox::warning(this, "Error", "No hay datos de tiempo para graficar.");
+        return;
+    }
+
+    // Crear un nuevo gráfico
+    QChart* chart = new QChart();
+    chart->setTitle("Tiempo de Ejecucion de Metodos");
+
+    // Crear un conjunto de barras
+    QBarSet* set = new QBarSet("Tiempo (ms)");
+
+    // Crear una serie de barras y añadir el conjunto
+    QBarSeries* series = new QBarSeries();
+
+    // Crear el eje X categorizado con nombres de métodos
+    QStringList categorias;
+
+    // Añadir los tiempos al conjunto de barras y las categorías al eje X
+    for (const auto& pair : tiempos) {        
+        *set << pair.second;
+        categorias << pair.first;
+    }
+
+    series->append(set);
+
+    // Añadir la serie al gráfico                                                                                                                                                                                                                                                   
+    chart->addSeries(series);
+
+    QBarCategoryAxis* ejeX = new QBarCategoryAxis();
+    ejeX->append(categorias);
+    chart->addAxis(ejeX, Qt::AlignBottom);
+    series->attachAxis(ejeX);
+
+    // Crear el eje Y para los tiempos
+    QValueAxis* ejeY = new QValueAxis();
+    ejeY->setTitleText("Tiempo (ms)");
+    chart->addAxis(ejeY, Qt::AlignLeft);
+    series->attachAxis(ejeY);
+
+    // Ajustar el rango del eje Y
+    qreal maxTiempo = 0;
+    for (const auto& pair : tiempos) {
+        if (pair.second > maxTiempo) {
+            maxTiempo = pair.second;
+        }
+    }
+    ejeY->setRange(0, maxTiempo * 1.1); // Añadir un 10% extra para mejor visualización
+
+    // Crear un gráfico de vista
+    QChartView* chartView = new QChartView(chart);
+    chartView->setRenderHint(QPainter::Antialiasing);
+
+    // Mostrar el gráfico en una ventana nueva
+    QWidget* window = new QWidget();
+    QVBoxLayout* layout = new QVBoxLayout(window);
+    layout->addWidget(chartView);
+    window->resize(800, 600);
+    window->show();
+}

@@ -22,7 +22,7 @@
    </font>
   </property>
   <property name="windowTitle">
-   <string>mulPolinomiosGUI</string>
+   <string>Multiplicación de Polinomios</string>
   </property>
   <widget class="QWidget" name="centralWidget">
    <widget class="QComboBox" name="comboBox">
@@ -145,13 +145,13 @@
      <string>Multiplicar</string>
     </property>
    </widget>
-   <widget class="QTableWidget" name="tableWidgetResult">
+   <widget class="QTableWidget" name="tablaResultados">
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>290</y>
+      <y>280</y>
       <width>711</width>
-      <height>31</height>
+      <height>51</height>
      </rect>
     </property>
     <property name="font">
@@ -187,9 +187,9 @@
    <widget class="QPushButton" name="btnGraficarTiempo">
     <property name="geometry">
      <rect>
-      <x>440</x>
+      <x>390</x>
       <y>340</y>
-      <width>151</width>
+      <width>201</width>
       <height>24</height>
      </rect>
     </property>
@@ -199,10 +199,10 @@
      </font>
     </property>
     <property name="text">
-     <string>Graficar Tiempo</string>
+     <string>Mostrar Gráfica de Tiempo</string>
     </property>
    </widget>
-   <widget class="QTableWidget" name="tableWidget">
+   <widget class="QTableWidget" name="tablaPolinomios">
     <property name="geometry">
      <rect>
       <x>10</x>
@@ -228,6 +228,24 @@
     </property>
     <property name="text">
      <string/>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="btnGenerarPolinomios">
+    <property name="geometry">
+     <rect>
+      <x>390</x>
+      <y>370</y>
+      <width>201</width>
+      <height>24</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <family>FiraCode Nerd Font</family>
+     </font>
+    </property>
+    <property name="text">
+     <string>Generar Polinomios</string>
     </property>
    </widget>
   </widget>
